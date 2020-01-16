@@ -121,10 +121,10 @@ void SineSurfer::Draw(BView* view, int32 frame)
 
 	fCenter.x++;
 
-	if (fCenter.x > fWidth) {
+	if (fCenter.x > (fWidth + fHeight*0.01)) {
 		fCenter.y += fHeight*(1.0/16.0);
 		fCenter.x = 0-fHeight*0.01;
-		circleColor -= 25;
+		circleColor -= 255/(fHeight/(fHeight*(1.0/16.0)));
 	}
 
 	view->StrokeEllipse(sineWavePoint, fHeight*0.01, fHeight*0.01);
