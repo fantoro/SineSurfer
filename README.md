@@ -2,6 +2,8 @@
 
 A simple screensaver for [Haiku](https://www.haiku-os.org/) made for the [Google Code-In contest](https://codein.withgoogle.com/dashboard/).
 
+![](SineSurfer.png)
+
 ## Usage
 
 ### Building
