@@ -60,13 +60,6 @@ private:
 	int		fHeight;
 	BPoint		fCenter;
 
-	int		circleDistance;
-	int		maxAbsIncreaseX;
-	int		maxAbsIncreaseY;
-
-	int		penSize;
-	int32		penDecrease;
-
 	BRect		rect;
 	BRegion		*screen;
 };

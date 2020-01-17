@@ -57,12 +57,6 @@ SineSurfer::SineSurfer(BMessage *msg, image_id image)
 
 	circleColor = 255;
 	circleAlpha = 255;
-
-	maxAbsIncreaseX = 2;
-	maxAbsIncreaseY = 2;
-	circleDistance = 75;
-
-	penDecrease = 1.5;
 }
 
 SineSurfer::~SineSurfer()
@@ -115,6 +109,9 @@ void SineSurfer::Draw(BView* view, int32 frame)
 		view->FillRect(view->Bounds(), B_SOLID_LOW);
 		fCenter.Set(0-fHeight*0.01, fHeight*(1.0/16.0)+10.0);
 	}
+
+	if (fCenter.y > fHeight+fHeight*(1.0/16.0))
+		return;
 
 	BPoint sineWavePoint(fCenter);
 	sineWavePoint.y += fHeight*(1.0/16.0)*sin(2*3.14*30*frame);
