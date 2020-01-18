@@ -53,11 +53,13 @@ private:
 	__haiku_std_uint8		bBackground;
 	__haiku_std_uint8		aBackground;
 
+	int				circleRadius;
 	__haiku_std_uint8		circleColor;
 	__haiku_std_uint8		circleAlpha;
 
 	int		fWidth;
 	int		fHeight;
+	int		fAmplitude;
 	BPoint		fCenter;
 
 	BRect		rect;

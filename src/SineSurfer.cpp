@@ -102,29 +102,30 @@ void SineSurfer::Draw(BView* view, int32 frame)
 	fWidth = (int) rect.Width() + 1;
 	fHeight = (int) rect.Height() + 1;
 
-	view->SetLowColor(rBackground, gBackground, bBackground, aBackground);
-	view->SetHighColor(circleColor, circleColor, circleColor, circleAlpha);
+	fAmplitude = fHeight*(1.0/16.0);
+	circleRadius = fHeight*0.01;
 
-	if (frame == 1) {
+	view->SetLowColor(rBackground, gBackground, bBackground, aBackground);
+
+	if (frame == 1 ||
+		fCenter.x > (fWidth + circleRadius + circleRadius*(fHeight/fAmplitude))) {
 		view->FillRect(view->Bounds(), B_SOLID_LOW);
-		fCenter.Set(0-fHeight*0.01, fHeight*(1.0/16.0)+10.0);
+		fCenter.Set(0-circleRadius, fAmplitude+10.0);
 	}
 
-	if (fCenter.y > fHeight+fHeight*(1.0/16.0))
-		return;
+	for (int i = 0; i < fHeight/fAmplitude; i++) {
+		BPoint sineWavePoint(fCenter);
+		sineWavePoint.x -= circleRadius*i;
+		sineWavePoint.y += fAmplitude*i;
+		sineWavePoint.y += fAmplitude*sin(2*3.14*30*frame);
 
-	BPoint sineWavePoint(fCenter);
-	sineWavePoint.y += fHeight*(1.0/16.0)*sin(2*3.14*30*frame);
+		circleColor = 255-(i*(255/(fHeight/fAmplitude)));
+		view->SetHighColor(circleColor, circleColor, circleColor, circleAlpha);
+
+		view->StrokeEllipse(sineWavePoint, circleRadius, circleRadius);
+	}
 
 	fCenter.x++;
-
-	if (fCenter.x > (fWidth + fHeight*0.01)) {
-		fCenter.y += fHeight*(1.0/16.0);
-		fCenter.x = 0-fHeight*0.01;
-		circleColor -= 255/(fHeight/(fHeight*(1.0/16.0)));
-	}
-
-	view->StrokeEllipse(sineWavePoint, fHeight*0.01, fHeight*0.01);
 }
 
 void SineSurfer::_Restart(BView* view)
