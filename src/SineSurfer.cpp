@@ -91,7 +91,7 @@ void SineSurfer::StartConfig(BView *view)
 		win->AddHandler(this);
 
 	BStringView* name = new BStringView("name", "Sine Surfer");
-	BStringView* author = new BStringView("author", "fantoro");
+	BStringView* author = new BStringView("author", "\u00a9 fantoro");
 	name->SetFont(be_bold_font);
 
 	BStringView* sineSettingsLabel = new BStringView("sineSettings", "Sine wave properties");
