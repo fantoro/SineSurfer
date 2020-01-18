@@ -55,7 +55,9 @@ private:
 	__haiku_std_uint8		aBackground;
 
 	int				circleRadius;
-	__haiku_std_uint8		circleColor;
+	__haiku_std_uint8		circleRed;
+	__haiku_std_uint8		circleGreen;
+	__haiku_std_uint8		circleBlue;
 	__haiku_std_uint8		circleAlpha;
 
 	int		fWidth;
@@ -68,6 +70,9 @@ private:
 	int		*fRandomNumber;
 
 	BSlider		*frequencySlider;
+	BSlider		*redSlider;
+	BSlider		*greenSlider;
+	BSlider		*blueSlider;
 
 	BRect		rect;
 	BRegion		*screen;

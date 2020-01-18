@@ -43,7 +43,9 @@ static const BString kAuthor = "fantoro";
 
 static const int32 K_SET_FREQUENCY = 'sfrq';
 //static const int32 K_SET_AMPLITUDE = 'samp';
-static const int32 K_SET_WAVE_COLOR = 'scol';
+static const int32 K_SET_RED = 'sred';
+static const int32 K_SET_GREEN = 'sgrn';
+static const int32 K_SET_BLUE = 'sblu';
 
 extern "C" BScreenSaver*
 instantiate_screen_saver(BMessage* msg, image_id id)
@@ -59,8 +61,14 @@ SineSurfer::SineSurfer(BMessage *msg, image_id image)
 	bBackground = 0;
 	aBackground = 255;
 
-	circleColor = 255;
+	circleRed = 255;
+	circleGreen = 255;
+	circleBlue = 255;
 	circleAlpha = 255;
+
+	circleRed = msg->GetInt8("red", circleRed);
+	circleGreen = msg->GetInt8("green", circleGreen);
+	circleBlue = msg->GetInt8("blue", circleBlue);
 
 	fFrequency = 30;
 	fFrequency = msg->GetInt32("frequency", fFrequency);
@@ -75,6 +83,8 @@ SineSurfer::~SineSurfer()
 
 void SineSurfer::StartConfig(BView *view)
 {
+	BString label;
+
 	BWindow* win = view->Window();
 
 	if (win)
@@ -84,6 +94,9 @@ void SineSurfer::StartConfig(BView *view)
 	BStringView* author = new BStringView("author", "fantoro");
 	name->SetFont(be_bold_font);
 
+	BStringView* sineSettingsLabel = new BStringView("sineSettings", "Sine wave properties");
+	sineSettingsLabel->SetFont(be_bold_font);
+
 	frequencySlider = new BSlider("frequency", "Frequency", new BMessage(
 		K_SET_FREQUENCY), 1, 60, B_HORIZONTAL);
 	frequencySlider->SetValue(fFrequency);
@@ -92,10 +105,48 @@ void SineSurfer::StartConfig(BView *view)
 	frequencySlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
 	frequencySlider->SetHashMarkCount(15);
 
-	BString freqLabel;
-	freqLabel.SetToFormat("Frequency: %d", fFrequency);
+	label.SetToFormat("Frequency: %d", fFrequency);
 
-	frequencySlider->SetLabel(freqLabel);
+	frequencySlider->SetLabel(label);
+
+	BStringView* colorSettingsLabel = new BStringView("colorSettings", "Sine wave color");
+	colorSettingsLabel->SetFont(be_bold_font);
+
+	redSlider = new BSlider("red", "Red", new BMessage(
+		K_SET_RED), 0, 255, B_HORIZONTAL);
+	redSlider->SetValue(circleRed);
+	redSlider->SetTarget(this);
+	redSlider->SetLimitLabels("0", "255");
+	redSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
+	redSlider->SetHashMarkCount(17);
+
+	label.SetToFormat("Red: %d", circleRed);
+
+	redSlider->SetLabel(label);
+
+	greenSlider = new BSlider("green", "Green", new BMessage(
+		K_SET_GREEN), 0, 255, B_HORIZONTAL);
+	greenSlider->SetValue(circleGreen);
+	greenSlider->SetTarget(this);
+	greenSlider->SetLimitLabels("0", "255");
+	greenSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
+	greenSlider->SetHashMarkCount(17);
+
+	label.SetToFormat("Green: %d", circleGreen);
+
+	greenSlider->SetLabel(label);
+
+	blueSlider = new BSlider("blue", "Blue", new BMessage(
+		K_SET_BLUE), 0, 255, B_HORIZONTAL);
+	blueSlider->SetValue(circleBlue);
+	blueSlider->SetTarget(this);
+	blueSlider->SetLimitLabels("0", "255");
+	blueSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
+	blueSlider->SetHashMarkCount(17);
+
+	label.SetToFormat("Blue: %d", circleBlue);
+
+	blueSlider->SetLabel(label);
 
 	BLayoutBuilder::Group<>(view, B_VERTICAL, B_USE_ITEM_SPACING)
 		.SetInsets(B_USE_WINDOW_INSETS)
@@ -107,8 +158,16 @@ void SineSurfer::StartConfig(BView *view)
 		.End()
 		.AddGlue()
 		.AddGroup(B_VERTICAL)
+			.Add(sineSettingsLabel)
 			.Add(frequencySlider)
 			.AddGlue()
+		.End()
+		.AddGlue()
+		.AddGroup(B_VERTICAL)
+			.Add(colorSettingsLabel)
+			.Add(redSlider)
+			.Add(greenSlider)
+			.Add(blueSlider)
 		.End();
 }
 
@@ -156,8 +215,10 @@ void SineSurfer::Draw(BView* view, int32 frame)
 		if (fRandomNumber != NULL)
 			sineWavePoint.y += fAmplitude*sin(2 * 3.14 * fFrequency * (frame + *(fAddXAxis.ItemAt(i))));
 
-		circleColor = 255-(i*(255/(fHeight/fAmplitude)));
-		view->SetHighColor(circleColor, circleColor, circleColor, circleAlpha);
+		int waveRed = circleRed-(i*(circleRed/(fHeight/fAmplitude)));
+		int waveGreen = circleGreen-(i*(circleGreen/(fHeight/fAmplitude)));
+		int waveBlue = circleBlue-(i*(circleBlue/(fHeight/fAmplitude)));
+		view->SetHighColor(waveRed, waveGreen, waveBlue, circleAlpha);
 
 		view->StrokeEllipse(sineWavePoint, circleRadius, circleRadius);
 	}
@@ -174,12 +235,34 @@ void SineSurfer::_Restart(BView* view)
 
 void SineSurfer::MessageReceived(BMessage* msg)
 {
+	BString label;
 	switch (msg->what) {
 		case K_SET_FREQUENCY: {
 			fFrequency = msg->GetInt32("be:value", fFrequency);
-			BString freqLabel;
-			freqLabel.SetToFormat("Frequency: %d", fFrequency);
-			frequencySlider->SetLabel(freqLabel);
+			label.SetToFormat("Frequency: %d", fFrequency);
+			frequencySlider->SetLabel(label);
+			fRestartNeeded = true;
+			break;
+		}
+
+		case K_SET_RED: {
+			circleRed = (__haiku_std_uint8)(msg->GetInt32("be:value", circleRed));
+			label.SetToFormat("Red: %d", circleRed);
+			redSlider->SetLabel(label);
+			fRestartNeeded = true;
+			break;
+		}
+		case K_SET_GREEN: {
+			circleGreen = (__haiku_std_uint8)(msg->GetInt32("be:value", circleGreen));
+			label.SetToFormat("Green: %d", circleGreen);
+			greenSlider->SetLabel(label);
+			fRestartNeeded = true;
+			break;
+		}
+		case K_SET_BLUE: {
+			circleBlue = (__haiku_std_uint8)(msg->GetInt32("be:value", circleBlue));
+			label.SetToFormat("Blue: %d", circleBlue);
+			blueSlider->SetLabel(label);
 			fRestartNeeded = true;
 			break;
 		}
@@ -191,5 +274,8 @@ void SineSurfer::MessageReceived(BMessage* msg)
 status_t SineSurfer::SaveState(BMessage *msg) const
 {
 	msg->AddInt32("frequency", fFrequency);
+	msg->AddInt8("red", circleRed);
+	msg->AddInt8("green", circleGreen);
+	msg->AddInt8("blue", circleBlue);
 	return B_OK;
 }
