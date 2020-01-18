@@ -28,6 +28,7 @@
 #include <Handler.h>
 #include <ScreenSaver.h>
 #include <ObjectList.h>
+#include <Slider.h>
 #include <config/types.h>
 
 class SineSurfer : public BScreenSaver, public BHandler {
@@ -59,10 +60,14 @@ private:
 
 	int		fWidth;
 	int		fHeight;
+	BPoint		fCenter;
+
+	int		fFrequency;
 	int		fAmplitude;
 	BObjectList<int> fAddXAxis;
 	int		*fRandomNumber;
-	BPoint		fCenter;
+
+	BSlider		*frequencySlider;
 
 	BRect		rect;
 	BRegion		*screen;

@@ -41,6 +41,10 @@
 static const BString kName = "Sine Surfer";
 static const BString kAuthor = "fantoro";
 
+static const int32 K_SET_FREQUENCY = 'sfrq';
+//static const int32 K_SET_AMPLITUDE = 'samp';
+static const int32 K_SET_WAVE_COLOR = 'scol';
+
 extern "C" BScreenSaver*
 instantiate_screen_saver(BMessage* msg, image_id id)
 {
@@ -57,6 +61,9 @@ SineSurfer::SineSurfer(BMessage *msg, image_id image)
 
 	circleColor = 255;
 	circleAlpha = 255;
+
+	fFrequency = 30;
+	fFrequency = msg->GetInt32("frequency", fFrequency);
 
 	srandom(time(NULL));
 }
@@ -77,12 +84,30 @@ void SineSurfer::StartConfig(BView *view)
 	BStringView* author = new BStringView("author", "fantoro");
 	name->SetFont(be_bold_font);
 
+	frequencySlider = new BSlider("frequency", "Frequency", new BMessage(
+		K_SET_FREQUENCY), 1, 60, B_HORIZONTAL);
+	frequencySlider->SetValue(fFrequency);
+	frequencySlider->SetTarget(this);
+	frequencySlider->SetLimitLabels("1", "60");
+	frequencySlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
+	frequencySlider->SetHashMarkCount(15);
+
+	BString freqLabel;
+	freqLabel.SetToFormat("Frequency: %d", fFrequency);
+
+	frequencySlider->SetLabel(freqLabel);
+
 	BLayoutBuilder::Group<>(view, B_VERTICAL, B_USE_ITEM_SPACING)
 		.SetInsets(B_USE_WINDOW_INSETS)
 		.SetExplicitAlignment(BAlignment(B_ALIGN_HORIZONTAL_CENTER, B_ALIGN_TOP))
 		.AddGroup(B_HORIZONTAL)
 			.Add(name)
 			.Add(author)
+			.AddGlue()
+		.End()
+		.AddGlue()
+		.AddGroup(B_VERTICAL)
+			.Add(frequencySlider)
 			.AddGlue()
 		.End();
 }
@@ -129,7 +154,7 @@ void SineSurfer::Draw(BView* view, int32 frame)
 		sineWavePoint.x -= circleRadius*i;
 		sineWavePoint.y += fAmplitude*i;
 		if (fRandomNumber != NULL)
-			sineWavePoint.y += fAmplitude*sin(2 * 3.14 * 30 * (frame + *(fAddXAxis.ItemAt(i))));
+			sineWavePoint.y += fAmplitude*sin(2 * 3.14 * fFrequency * (frame + *(fAddXAxis.ItemAt(i))));
 
 		circleColor = 255-(i*(255/(fHeight/fAmplitude)));
 		view->SetHighColor(circleColor, circleColor, circleColor, circleAlpha);
@@ -150,12 +175,21 @@ void SineSurfer::_Restart(BView* view)
 void SineSurfer::MessageReceived(BMessage* msg)
 {
 	switch (msg->what) {
-	default:
-		BHandler::MessageReceived(msg);	
+		case K_SET_FREQUENCY: {
+			fFrequency = msg->GetInt32("be:value", fFrequency);
+			BString freqLabel;
+			freqLabel.SetToFormat("Frequency: %d", fFrequency);
+			frequencySlider->SetLabel(freqLabel);
+			fRestartNeeded = true;
+			break;
+		}
+		default:
+			BHandler::MessageReceived(msg);
 	}
 }
 
 status_t SineSurfer::SaveState(BMessage *msg) const
 {
+	msg->AddInt32("frequency", fFrequency);
 	return B_OK;
 }
