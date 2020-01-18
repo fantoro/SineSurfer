@@ -60,6 +60,8 @@ private:
 	int		fWidth;
 	int		fHeight;
 	int		fAmplitude;
+	BObjectList<int> fAddXAxis;
+	int		*fRandomNumber;
 	BPoint		fCenter;
 
 	BRect		rect;

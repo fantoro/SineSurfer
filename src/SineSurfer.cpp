@@ -48,7 +48,7 @@ instantiate_screen_saver(BMessage* msg, image_id id)
 }
 
 SineSurfer::SineSurfer(BMessage *msg, image_id image)
-	: BScreenSaver(msg, image)
+	: BScreenSaver(msg, image), fAddXAxis(20, true), fRandomNumber(NULL)
 {
 	rBackground = 0;
 	gBackground = 0;
@@ -57,11 +57,13 @@ SineSurfer::SineSurfer(BMessage *msg, image_id image)
 
 	circleColor = 255;
 	circleAlpha = 255;
+
+	srandom(time(NULL));
 }
 
 SineSurfer::~SineSurfer()
 {
-
+	fAddXAxis.MakeEmpty();
 }
 
 void SineSurfer::StartConfig(BView *view)
@@ -109,15 +111,25 @@ void SineSurfer::Draw(BView* view, int32 frame)
 
 	if (frame == 1 ||
 		fCenter.x > (fWidth + circleRadius + circleRadius*(fHeight/fAmplitude))) {
+		//fAddXAxis = (random() % 50) - 25;
+
 		view->FillRect(view->Bounds(), B_SOLID_LOW);
 		fCenter.Set(0-circleRadius, fAmplitude+10.0);
+
+		fAddXAxis.MakeEmpty();
+
+		for (int i = 0; i < fHeight/fAmplitude; i++) {
+			fRandomNumber = new int(random() % (7 + 1 + 7) - 7);
+			fAddXAxis.AddItem(fRandomNumber, i);
+		}
 	}
 
 	for (int i = 0; i < fHeight/fAmplitude; i++) {
 		BPoint sineWavePoint(fCenter);
 		sineWavePoint.x -= circleRadius*i;
 		sineWavePoint.y += fAmplitude*i;
-		sineWavePoint.y += fAmplitude*sin(2*3.14*30*frame);
+		if (fRandomNumber != NULL)
+			sineWavePoint.y += fAmplitude*sin(2 * 3.14 * 30 * (frame + *(fAddXAxis.ItemAt(i))));
 
 		circleColor = 255-(i*(255/(fHeight/fAmplitude)));
 		view->SetHighColor(circleColor, circleColor, circleColor, circleAlpha);
